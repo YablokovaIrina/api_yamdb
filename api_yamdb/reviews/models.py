@@ -1,27 +1,27 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
-User = get_user_model()
+# User = get_user_model()
 
 
-class Title(models.Model):
-    name = models.TextField(max_length=256, verbose_name='Название')
-    year = models.IntegerField(verbose_name='Год выпуска')
-    rank = models.IntegerField(default=0, editable=False)
-    description = models.TextField(
-        blank=True,
-        verbose_name='Описание'
-    )
+# class Title(models.Model):
+#     name = models.TextField(max_length=256, verbose_name='Название')
+#     year = models.IntegerField(verbose_name='Год выпуска')
+#     rank = models.IntegerField(default=0, editable=False)
+#     description = models.TextField(
+#         blank=True,
+#         verbose_name='Описание'
+#     )
 
-    class Meta:
-        ordering = ('name',)
-        verbose_name = 'Произведение'
-        verbose_name_plural = 'Произведения'
+#     class Meta:
+#         ordering = ('name',)
+#         verbose_name = 'Произведение'
+#         verbose_name_plural = 'Произведения'
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 
 class Review(models.Model):
