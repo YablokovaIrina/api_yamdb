@@ -50,6 +50,6 @@ class User(AbstractUser):
     def is_moderator(self):
         return self.role == User.MODERATOR
 
-    class Meta:
+    class Meta(AbstractUser.Meta):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
