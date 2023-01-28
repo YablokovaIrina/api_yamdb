@@ -9,7 +9,11 @@ class UserAdmin(admin.ModelAdmin):
         'email',
         'role',
     )
-    search_fields = ('username',)
+    search_fields = (
+        'username',
+        'email',
+        'role',
+    )
     list_filter = ('role',)
 
 
