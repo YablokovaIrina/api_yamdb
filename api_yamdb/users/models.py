@@ -44,11 +44,11 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == User.ADMIN or self.is_staff or self.is_superuser
+        return self.role == ADMIN or self.is_staff or self.is_superuser
 
     @property
     def is_moderator(self):
-        return self.role == User.MODERATOR
+        return self.role == MODERATOR
 
     class Meta(AbstractUser.Meta):
         verbose_name = 'Пользователь'
