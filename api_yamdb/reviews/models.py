@@ -1,6 +1,5 @@
 # from django.contrib.auth import get_user_model
 from django.db import models
-
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -68,7 +67,20 @@ class Title(models.Model):
 
     def str(self):
         return self.name
-        
+ 
+ 
+ class GenreTitle(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='Произведение',
+    )
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        verbose_name='Жанр',
+    )
+
         
 class Review(models.Model):
     text = models.TextField()
