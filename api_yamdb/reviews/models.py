@@ -69,7 +69,7 @@ class Title(models.Model):
         return self.name
  
  
- class GenreTitle(models.Model):
+class GenreTitle(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,

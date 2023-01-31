@@ -5,12 +5,14 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
-from reviews.models import (Category,
-                            Genre,
-                            GenreTitle,
-                            Title,
-                            Comment,
-                            Review)
+from reviews.models import (
+    Category,
+    Genre,
+    GenreTitle,
+    Title,
+    Comment,
+    Review
+)
 
 User = get_user_model()
 
