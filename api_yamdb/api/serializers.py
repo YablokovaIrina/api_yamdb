@@ -1,11 +1,94 @@
 import datetime as dt
-
+import re
 from rest_framework import serializers
 from rest_framework.serializers import SlugRelatedField
 
 from reviews.models import (
     Comment, Review, Title, Genre, Category
 )
+from users.models import User
+
+
+class RegisterDataSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(regex=r'^[\w.@+-]+$',
+                                      max_length=150,
+                                      required=True)
+    email = serializers.EmailField(max_length=254)
+
+    def validate_username(self, value):
+        if value.lower() == 'me':
+            raise serializers.ValidationError('User not valid')
+        if len(value) > 150:
+            raise serializers.ValidationError('Not mach len')
+        pattern_username = '[A-Za-z0-9+-_@]+'
+        if re.match(pattern_username, value) is None:
+            raise serializers.ValidationError('Incorrect symbol')
+        return value
+
+    class Meta:
+        fields = ('username', 'email')
+        model = User
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email'
+        )
+
+    def validate(self, data):
+        if data.get('username') == 'me':
+            raise serializers.ValidationError(
+                'Использовать имя me запрещено'
+            )
+        if User.objects.filter(username=data.get('username')):
+            raise serializers.ValidationError(
+                'Пользователь с таким username уже существует'
+            )
+        if User.objects.filter(email=data.get('email')):
+            raise serializers.ValidationError(
+                'Пользователь с таким email уже существует'
+            )
+        return data
+
+
+class UserRecieveTokenSerializer(serializers.Serializer):
+
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+$',
+        max_length=150,
+        required=True
+    )
+    confirmation_code = serializers.CharField(
+        max_length=150,
+        required=True
+    )
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+
+    def validate_username(self, username):
+        if username in 'me':
+            raise serializers.ValidationError(
+                'Использовать имя me запрещено'
+            )
+        return username
+
+    def validate_role(self, role):
+        try:
+            if self.instance.role != 'admin':
+                return self.instance.role
+            return role
+        except AttributeError:
+            return role
 
 
 class CommentSerializer(serializers.ModelSerializer):
