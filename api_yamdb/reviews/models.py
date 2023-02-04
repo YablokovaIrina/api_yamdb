@@ -98,20 +98,19 @@ class Review(models.Model):
         'Дата добавления', auto_now_add=True, db_index=True
     )
 
-    def save(self, *args, **kwargs):
-        # пользователь может оставить только один отзыв на произведение
-        # если объект отзыва существует, значит у него есть self.pk (True)
-        # и это возможно вызвали метод patch, нужно разрешить сохранить данные
-        # если это новый отзыв, значит у него нет self.pk (False) и тут уже
-        # проверяется а не существет ли уже отзыва
-        # переданного автора к переданному посту
-        if not self.pk and Review.objects.filter(
-            author=self.author, title=self.title
-        ).exists():
-            raise ValidationError(
-                'Пользователь может оставить только один отзыв на произведнеие'
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique review'
             )
-        return super().save()
+        ]
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+        default_related_name = 'reviews'
+
+    def __str__(self):
+        return self.text[:60]
 
 
 class Comment(models.Model):

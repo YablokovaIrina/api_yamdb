@@ -2,6 +2,7 @@ import datetime as dt
 import re
 from rest_framework import serializers
 from rest_framework.serializers import SlugRelatedField
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from reviews.models import (
     Comment, Review, Title, Genre, Category
@@ -103,11 +104,32 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
 
-    author = SlugRelatedField(slug_field='username', read_only=True)
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+    )
+    title = serializers.SlugRelatedField(
+        slug_field='pk',
+        read_only=True,
+    )
+    score = serializers.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(10)
+        ])
 
     class Meta:
+        fields = '__all__'
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date',)
+
+    def validate(self, data):
+        author = self.context['request'].user
+        title_id = self.context['view'].kwargs.get('title_id')
+        if (self.context['request'].method != 'PATCH'
+                and Review.objects.filter(
+                    author=author, title=title_id).exists()):
+            raise serializers.ValidationError('Вы уже оставили отзыв')
+        return data
 
 
 class CategorySerializer(serializers.ModelSerializer):
