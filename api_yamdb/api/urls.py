@@ -33,6 +33,7 @@ router_v1.register(
 
 urlpatterns = [
     path('v1/auth/signup/', UserCreateViewSet.as_view({'post': 'create'})),
-    path('v1/auth/token/', UserReceiveTokenViewSet.as_view({'post': 'create'})),
+    path('v1/auth/token/',
+         UserReceiveTokenViewSet.as_view({'post': 'create'})),
     path('v1/', include(router_v1.urls)),
 ]

@@ -29,6 +29,7 @@ class AdminPermission(permissions.BasePermission):
         return (request.user.is_authenticated
                 and request.user.is_admin)
 
+
 class ReadOnlyPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):

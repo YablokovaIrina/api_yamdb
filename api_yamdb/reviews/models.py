@@ -1,6 +1,4 @@
-# from django.contrib.auth import get_user_model
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from users.models import User
@@ -67,8 +65,8 @@ class Title(models.Model):
 
     def str(self):
         return self.name
- 
- 
+
+
 class GenreTitle(models.Model):
     title = models.ForeignKey(
         Title,
@@ -81,7 +79,7 @@ class GenreTitle(models.Model):
         verbose_name='Жанр',
     )
 
-        
+
 class Review(models.Model):
     text = models.TextField()
     # оценка должна лежать в диапозоне от 1 до 10
