@@ -8,7 +8,6 @@ from users.models import User
 
 
 def load_users():
-    """Загружает данные из файла users.csv."""
     print('loading user data...')
     with open('static/data/users.csv', encoding='utf-8') as file:
         reader = DictReader(file)
@@ -26,7 +25,6 @@ def load_users():
 
 
 def load_genres():
-    """Загружает данные из файла genre.csv."""
     print('loading genre data...')
     with open('static/data/genre.csv', encoding='utf-8') as file:
         reader = DictReader(file)
@@ -43,7 +41,6 @@ def load_genres():
 
 
 def load_categories():
-    """Загружает данные из файла category.csv."""
     print('loading category data...')
     with open('static/data/category.csv', encoding='utf-8') as file:
         reader = DictReader(file)
@@ -60,7 +57,6 @@ def load_categories():
 
 
 def load_title():
-    """Загружает данные из файла titles.csv."""
     print('loading title data...')
     with open('static/data/titles.csv', encoding='utf-8') as file:
         reader = DictReader(file)
@@ -79,7 +75,6 @@ def load_title():
 
 
 def load_genre_title():
-    """Загружает данные из файла genre_title.csv."""
     print('loading genre/title relation data...')
     with open('static/data/genre_title.csv', encoding='utf-8') as file:
         reader = DictReader(file)
@@ -93,7 +88,6 @@ def load_genre_title():
 
 
 def load_reviews():
-    """Загружает данные из файла review.csv."""
     print('loading reviews data...')
     with open('static/data/review.csv', encoding='utf-8') as file:
         reader = DictReader(file)
@@ -113,7 +107,6 @@ def load_reviews():
 
 
 def load_comments():
-    """Загружает данные из файла comments.csv."""
     print('loading comment data...')
     with open('static/data/comments.csv', encoding='utf-8') as file:
         reader = DictReader(file)
@@ -132,16 +125,6 @@ def load_comments():
 
 
 class Command(BaseCommand):
-    """Создает комманду для django,
-    предназначенную для выгрузки данных из csv файлов
-    в папке /static/data/.
-    Для запуска - python manage.py load_data.
-    Собственно рабочий код находится в файле _load_data_funcs.py.
-    В планах оптимизировать работу функций, т.к. много повторяющегося кода.
-    """
-
-    help = ('Загружает данные из csv файлов в',
-            '"/static/data/" в соответствующие модели')
 
     def handle(self, *args, **options):
         try:

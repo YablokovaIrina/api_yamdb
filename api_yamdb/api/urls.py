@@ -30,9 +30,21 @@ router_v1.register(
     basename='comment'
 )
 
+auth_urls = [
+    path(
+        'signup/',
+        UserCreateViewSet.as_view({'post': 'create'}),
+        name='signup'
+    ),
+    path(
+        'token/',
+        UserReceiveTokenViewSet.as_view({'post': 'create'}),
+        name='token'
+    )
+]
+
 
 urlpatterns = [
-    path('v1/auth/signup/', UserCreateViewSet.as_view({'post': 'create'})),
-    path('v1/auth/token/', UserReceiveTokenViewSet.as_view({'post': 'create'})),
+    path('v1/auth/', include(auth_urls)),
     path('v1/', include(router_v1.urls)),
 ]
