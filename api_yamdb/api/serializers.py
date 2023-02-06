@@ -1,8 +1,8 @@
 import datetime as dt
 import re
+from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework import serializers
 from rest_framework.serializers import SlugRelatedField
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 from reviews.models import (
     Comment, Review, Title, Genre, Category
@@ -157,6 +157,14 @@ class TitleReadSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
+        read_only_fields = (
+            'id',
+            'name',
+            'year',
+            'description',
+            'genre',
+            'category',
+            'rating',)
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -171,7 +179,8 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
+        read_only_fields = ('id',)
         model = Title
 
     def validate_year(self, value):
