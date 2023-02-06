@@ -127,4 +127,6 @@ SIMPLE_JWT = {
 
 LENGTH_TEXT = 15
 LIST_PER_PAGE = 10
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 EMAIL_YAMDB = 'registration_YaMDb@mail.com'

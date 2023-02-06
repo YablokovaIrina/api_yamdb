@@ -1,6 +1,5 @@
 # from django.contrib.auth import get_user_model
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from users.models import User
@@ -67,8 +66,8 @@ class Title(models.Model):
 
     def str(self):
         return self.name
- 
- 
+
+
 class GenreTitle(models.Model):
     title = models.ForeignKey(
         Title,
@@ -81,30 +80,37 @@ class GenreTitle(models.Model):
         verbose_name='Жанр',
     )
 
-        
-class Review(models.Model):
+
+class BaseReviewComments(models.Model):
     text = models.TextField()
-    # оценка должна лежать в диапозоне от 1 до 10
-    score = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(10)]
-    )
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews'
-    )
-    title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='reviews'
+        User, on_delete=models.CASCADE
     )
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
     )
 
     class Meta:
+        abstract = True
+
+
+class Review(BaseReviewComments):
+    # оценка должна лежать в диапозоне от 1 до 10
+    score = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE
+    )
+
+    class Meta():
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
                 name='unique review'
             )
         ]
+        ordering = ('title',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
@@ -113,14 +119,16 @@ class Review(models.Model):
         return self.text[:60]
 
 
-class Comment(models.Model):
-    text = models.TextField()
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='comments'
-    )
+class Comment(BaseReviewComments):
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name='comments'
+        Review, on_delete=models.CASCADE
     )
-    pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True
-    )
+
+    class Meta():
+        ordering = ('review',)
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+        default_related_name = 'comments'
+
+    def __str__(self):
+        return self.text[:60]
