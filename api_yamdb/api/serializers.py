@@ -1,11 +1,9 @@
 import re
-from django.core.validators import MinValueValidator, MaxValueValidator
+
 from rest_framework import serializers
 from rest_framework.serializers import SlugRelatedField
 
-from reviews.models import (
-    Comment, Review, Title, Genre, Category
-)
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
 
@@ -98,7 +96,6 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date')
-        read_only_fields = ('review',)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -107,27 +104,19 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True,
     )
-    title = serializers.SlugRelatedField(
-        slug_field='pk',
-        read_only=True,
-    )
-    score = serializers.IntegerField(
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(10)
-        ])
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
 
     def validate(self, data):
         author = self.context['request'].user
         title_id = self.context['view'].kwargs.get('title_id')
-        if (self.context['request'].method != 'PATCH'
-                and Review.objects.filter(
-                    author=author, title=title_id).exists()):
-            raise serializers.ValidationError('Вы уже оставили отзыв')
+        if self.context['request'].method != 'PATCH':
+            author = self.context['request'].user
+            title_id = self.context['view'].kwargs.get('title_id')
+            if Review.objects.filter(author=author, title=title_id).exists():
+                raise serializers.ValidationError('Вы уже оставили отзыв')
         return data
 
 
