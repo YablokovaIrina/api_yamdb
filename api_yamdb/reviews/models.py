@@ -1,8 +1,7 @@
-# from django.contrib.auth import get_user_model
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+from .validators import validate_year
 from users.models import User
 
 
@@ -40,7 +39,8 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.TextField(max_length=256, verbose_name='Название')
-    year = models.IntegerField(verbose_name='Год выпуска')
+    year = models.IntegerField(validators=(validate_year,),
+                               verbose_name='Год выпуска')
     description = models.TextField(
         blank=True,
         null=True,
@@ -67,8 +67,8 @@ class Title(models.Model):
 
     def str(self):
         return self.name
- 
- 
+
+
 class GenreTitle(models.Model):
     title = models.ForeignKey(
         Title,
@@ -81,7 +81,7 @@ class GenreTitle(models.Model):
         verbose_name='Жанр',
     )
 
-        
+
 class Review(models.Model):
     text = models.TextField()
     # оценка должна лежать в диапозоне от 1 до 10
