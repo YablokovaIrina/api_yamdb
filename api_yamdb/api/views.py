@@ -7,8 +7,8 @@ from rest_framework.decorators import action
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.response import Response
 from users.models import User
-
 from reviews.models import Review, Title, Genre, Category
+
 from .filters import TitlesFilter
 from .permissions import (
     IsAuthorOrStaffOrReadOnly,
@@ -22,9 +22,8 @@ from .serializers import (
     GenreSerializer,
     TitleWriteSerializer,
     TitleReadSerializer,
-    UserCreateSerializer,
+    UserSerializer,
     UserRecieveTokenSerializer,
-    UserSerializer
 )
 from .utils import send_confirmation_code
 
@@ -32,7 +31,7 @@ from .utils import send_confirmation_code
 class UserCreateViewSet(mixins.CreateModelMixin,
                         viewsets.GenericViewSet):
     queryset = User.objects.all()
-    serializer_class = UserCreateSerializer
+    serializer_class = UserSerializer
     permission_classes = (permissions.AllowAny,)
 
     def create(self, request):
@@ -47,7 +46,7 @@ class UserCreateViewSet(mixins.CreateModelMixin,
             send_confirmation_code
             return Response(request.data, status=status.HTTP_200_OK)
 
-        serializer = UserCreateSerializer(data=request.data)
+        serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user, _ = User.objects.get_or_create(
             **serializer.validated_data
@@ -80,9 +79,7 @@ class UserReceiveTokenViewSet(mixins.CreateModelMixin,
         return Response(message, status=status.HTTP_200_OK)
 
 
-class UserViewSet(mixins.ListModelMixin,
-                  mixins.CreateModelMixin,
-                  viewsets.GenericViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (AdminPermission,)
@@ -106,7 +103,7 @@ class UserViewSet(mixins.ListModelMixin,
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
     @action(
         detail=False,
@@ -122,7 +119,6 @@ class UserViewSet(mixins.ListModelMixin,
                 partial=True, context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
-            serializer.save()
             serializer.save(role=request.user.role)
             return Response(serializer.data, status=status.HTTP_200_OK)
         serializer = UserSerializer(request.user)

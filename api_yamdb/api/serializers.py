@@ -28,30 +28,6 @@ class RegisterDataSerializer(serializers.ModelSerializer):
         model = User
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email'
-        )
-
-    def validate(self, data):
-        if data.get('username') == 'me':
-            raise serializers.ValidationError(
-                'Использовать имя me запрещено'
-            )
-        if User.objects.filter(username=data.get('username')):
-            raise serializers.ValidationError(
-                'Пользователь с таким username уже существует'
-            )
-        if User.objects.filter(email=data.get('email')):
-            raise serializers.ValidationError(
-                'Пользователь с таким email уже существует'
-            )
-        return data
-
-
 class UserRecieveTokenSerializer(serializers.Serializer):
 
     username = serializers.RegexField(
