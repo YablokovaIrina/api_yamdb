@@ -10,9 +10,9 @@ USER = 'user'
 
 class User(AbstractUser):
     USER_ROLE_CHOICES = (
-        (ADMIN, 'admin'),
-        (MODERATOR, 'moderator'),
-        (USER, 'user'),
+        (ADMIN, 'Администратор'),
+        (MODERATOR, 'Модератор'),
+        (USER, 'Пользователь'),
     )
 
     username = models.CharField(
@@ -27,7 +27,7 @@ class User(AbstractUser):
         verbose_name='Адрес электронной почты',
     )
     role = models.CharField(
-        max_length=10,
+        max_length=15,
         choices=USER_ROLE_CHOICES,
         default=USER,
         verbose_name='Роль пользователя',
