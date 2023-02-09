@@ -1,4 +1,3 @@
-import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -28,7 +27,6 @@ INSTALLED_APPS = [
     'django_filters',
     'api',
     'reviews',
-    'users',
 ]
 
 MIDDLEWARE = [
@@ -106,7 +104,7 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'reviews.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -127,6 +125,4 @@ SIMPLE_JWT = {
 
 LENGTH_TEXT = 15
 LIST_PER_PAGE = 10
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
-EMAIL_ADMIN = 'Admin@ya.ru'
+EMAIL_YAMDB = 'registration_YaMDb@mail.com'

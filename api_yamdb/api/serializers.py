@@ -1,28 +1,43 @@
-import re
-
 from rest_framework import serializers
 from rest_framework.serializers import SlugRelatedField
 
-from reviews.models import Category, Comment, Genre, Review, Title
-from users.models import User
+from reviews.models import Category, Comment, Genre, Review, Title, User
+
+FORBIDDEN_NAME = 'me'
+FORBIDDEN_NAME_MSG = 'Имя пользователя "me" не разрешено.'
+USER_EXISTS_MSG = 'Пользователь с таким username уже зарегистрирован'
+EMAIL_EXISTS_MSG = 'Указанная почта уже зарегестрирована другим пользователем'
 
 
 class RegisterDataSerializer(serializers.Serializer):
-    email = serializers.EmailField(max_length=254, required=True)
-    username = serializers.CharField(max_length=150, required=True)
+    class Meta:
+        model = User
+        fields = ('email', 'username')
+
+    def validate_username(self, name):
+        if name == FORBIDDEN_NAME:
+            raise serializers.ValidationError(FORBIDDEN_NAME)
+        return name
 
     def validate(self, data):
-        if data['username'] == 'me':
-            raise serializers.ValidationError('Использовать имя me запрещено')
+        username = data.get('username')
+        email = data.get('email')
+        if (
+                User.objects.filter(username=username).exists()
+                and User.objects.get(username=username).email != email
+        ):
+            raise serializers.ValidationError(USER_EXISTS_MSG)
+        if (
+                User.objects.filter(email=email).exists()
+                and User.objects.get(email=email).username != username
+        ):
+            raise serializers.ValidationError(EMAIL_EXISTS_MSG)
         return data
-
-    class Meta:
-        fields = ('username', 'email')
 
 
 class UserRecieveTokenSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150, required=True)
-    confirmation_code = serializers.CharField(required=True)
+    username = serializers.CharField(max_length=150)
+    confirmation_code = serializers.CharField(max_length=50)
 
     class Meta:
         fields = ('username', 'confirmation_code')
@@ -35,6 +50,12 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
+
+    def validate(self, data):
+        if data.get('username') == FORBIDDEN_NAME:
+            raise serializers.ValidationError(
+               {'username': FORBIDDEN_NAME_MSG})
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):

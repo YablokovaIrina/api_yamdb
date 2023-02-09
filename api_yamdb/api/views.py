@@ -1,16 +1,14 @@
-from django.core.mail import send_mail
-from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, permissions, status, viewsets, mixins
-from rest_framework.decorators import api_view, action, permission_classes
+from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from users.models import User
-from reviews.models import Review, Title, Genre, Category
+
 from rest_framework_simplejwt.tokens import RefreshToken
+from reviews.models import Review, Title, Genre, Category, User
 from .filters import TitlesFilter
 from .permissions import (
     IsAuthorOrStaffOrReadOnly,
@@ -27,7 +25,7 @@ from .serializers import (
     UserSerializer,
     UserRecieveTokenSerializer,
 )
-from api_yamdb.settings import EMAIL_ADMIN
+from .utils import send_confirmation_code
 
 
 @api_view(['POST'])
@@ -50,20 +48,6 @@ def signup_post(request):
     serializer.save()
     send_confirmation_code(username)
     return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-def send_confirmation_code(username):
-    user = get_object_or_404(User, username=username)
-    confirmation_code = default_token_generator.make_token(user)
-    user.confirmation_code = confirmation_code
-    send_mail(
-        'Код регистрации',
-        f'Код для получения токена {user.confirmation_code}',
-        EMAIL_ADMIN,
-        [user.email],
-        fail_silently=False,
-    )
-    user.save()
 
 
 @api_view(['POST'])

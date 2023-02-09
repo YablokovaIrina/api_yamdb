@@ -1,8 +1,70 @@
-from django.db import models
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
-from .validators import validate_year
-from users.models import User
+from .validators import validate_username, validate_year
+
+ADMIN = 'admin'
+MODERATOR = 'moderator'
+USER = 'user'
+
+
+class User(AbstractUser):
+    USER_ROLE_CHOICES = (
+        (ADMIN, 'Администратор'),
+        (MODERATOR, 'Модератор'),
+        (USER, 'Пользователь'),
+    )
+
+    username = models.CharField(
+        unique=True,
+        max_length=150,
+        verbose_name='Имя пользователя',
+        validators=(validate_username,),
+    )
+    email = models.EmailField(
+        unique=True,
+        max_length=254,
+        verbose_name='Адрес электронной почты',
+    )
+    role = models.CharField(
+        max_length=15,
+        choices=USER_ROLE_CHOICES,
+        default=USER,
+        verbose_name='Роль пользователя',
+    )
+    bio = models.TextField(
+        blank=True,
+        verbose_name='Биография пользователя',
+    )
+    confirmation_code = models.CharField(
+        max_length=10,
+        blank=True,
+        verbose_name='Код подтверждения',
+    )
+
+    class Meta:
+        ordering = ['-id']
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_username_email'
+            )
+        ]
+
+    @property
+    def is_user(self):
+        return self.role == USER
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN
 
 
 class Category(models.Model):
@@ -96,6 +158,11 @@ class BaseReviewComments(models.Model):
 
 
 class Review(BaseReviewComments):
+    author = models.ForeignKey(
+        User,
+        verbose_name='Автор',
+        on_delete=models.CASCADE,
+    )
     # оценка должна лежать в диапозоне от 1 до 10
     score = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)]
