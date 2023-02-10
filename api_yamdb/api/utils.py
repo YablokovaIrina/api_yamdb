@@ -11,10 +11,10 @@ def send_confirmation_code(username):
     confirmation_code = default_token_generator.make_token(user)
     user.confirmation_code = confirmation_code
     send_mail(
-        'Код регистрации',
-        f'Код для получения токена {user.confirmation_code}',
-        EMAIL_YAMDB,
-        [user.email],
+        subject='Код подтверждения',
+        message=f'Ваш код подтверждения: {user.confirmation_code}',
+        from_email=EMAIL_YAMDB,
+        recipient_list=[user.email],
         fail_silently=False,
     )
     user.save()

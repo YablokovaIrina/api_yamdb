@@ -38,7 +38,7 @@ def signup_post(request):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         send_confirmation_code(username)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(request.data, status=status.HTTP_200_OK)
 
     user = get_object_or_404(User, username=username)
     serializer = UserSerializer(
@@ -73,7 +73,7 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     permission_classes = (AdminPermission,)
     filter_backends = (filters.SearchFilter, )
-    filterset_fields = ('username')
+    filterset_fields = ('username',)
     search_fields = ('username', )
     lookup_field = 'username'
 
@@ -85,10 +85,10 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def get_patch_me(self, request):
         user = get_object_or_404(User, username=self.request.user)
-        if request.method == 'GET':
+        if request.method == 'PATCH':
             serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == 'PATCH':
+        elif request.method == 'DELETE':
             serializer = UserSerializer(user, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
