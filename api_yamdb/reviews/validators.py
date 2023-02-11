@@ -1,15 +1,22 @@
 import re
+import datetime as dt
 
-from rest_framework.serializers import ValidationError
+from django.core.exceptions import ValidationError
+
+
+def validate_year(value):
+    if value > dt.datetime.now().year:
+        raise ValidationError(
+            'Год выпуска превышает текущий!')
+    return value
 
 
 def validate_username(value):
     if value == 'me':
         raise ValidationError(
-            'Использовать имя "me" в качестве username запрещено.'
+            'Имя не может быть - me/Me/I.',
+            params={'value': value},
         )
-    if len(value) > 150:
-        raise ValidationError('Имя должно быть не более 150 символов.')
     match = re.match(r'^[\w@.+-]+$', value)
     if match is None or match.group() != value:
         raise ValidationError(

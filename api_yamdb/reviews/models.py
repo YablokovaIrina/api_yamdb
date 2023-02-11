@@ -1,7 +1,70 @@
-from django.db import models
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
-from users.models import User
+from .validators import validate_username, validate_year
+
+ADMIN = 'admin'
+MODERATOR = 'moderator'
+USER = 'user'
+
+
+class User(AbstractUser):
+    USER_ROLE_CHOICES = (
+        (ADMIN, 'Администратор'),
+        (MODERATOR, 'Модератор'),
+        (USER, 'Пользователь'),
+    )
+
+    username = models.CharField(
+        unique=True,
+        max_length=150,
+        verbose_name='Имя пользователя',
+        validators=(validate_username,),
+    )
+    email = models.EmailField(
+        unique=True,
+        max_length=254,
+        verbose_name='Адрес электронной почты',
+    )
+    role = models.CharField(
+        max_length=15,
+        choices=USER_ROLE_CHOICES,
+        default=USER,
+        verbose_name='Роль пользователя',
+    )
+    bio = models.TextField(
+        blank=True,
+        verbose_name='Биография пользователя',
+    )
+    confirmation_code = models.CharField(
+        max_length=10,
+        blank=True,
+        verbose_name='Код подтверждения',
+    )
+
+    class Meta:
+        ordering = ['-id']
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_username_email'
+            )
+        ]
+
+    @property
+    def is_user(self):
+        return self.role == USER
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN or self.is_staff
 
 
 class Category(models.Model):
@@ -17,7 +80,7 @@ class Category(models.Model):
         verbose_name_plural = 'Категории'
 
     def __str__(self):
-        return self.name
+        return self.slug
 
 
 class Genre(models.Model):
@@ -33,12 +96,13 @@ class Genre(models.Model):
         verbose_name_plural = 'Жанры'
 
     def __str__(self):
-        return self.name
+        return self.slug
 
 
 class Title(models.Model):
     name = models.TextField(max_length=256, verbose_name='Название')
-    year = models.IntegerField(verbose_name='Год выпуска')
+    year = models.IntegerField(validators=(validate_year,),
+                               verbose_name='Год выпуска')
     description = models.TextField(
         blank=True,
         null=True,
@@ -80,29 +144,41 @@ class GenreTitle(models.Model):
     )
 
 
-class Review(models.Model):
+class BaseReviewComments(models.Model):
     text = models.TextField()
-    # оценка должна лежать в диапозоне от 1 до 10
-    score = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(10)]
-    )
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews'
-    )
-    title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='reviews'
+        User, on_delete=models.CASCADE
     )
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
     )
 
     class Meta:
+        abstract = True
+
+
+class Review(BaseReviewComments):
+    author = models.ForeignKey(
+        User,
+        verbose_name='Автор',
+        on_delete=models.CASCADE,
+    )
+    # оценка должна лежать в диапозоне от 1 до 10
+    score = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE
+    )
+
+    class Meta():
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
                 name='unique review'
             )
         ]
+        ordering = ('title',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
@@ -111,14 +187,16 @@ class Review(models.Model):
         return self.text[:60]
 
 
-class Comment(models.Model):
-    text = models.TextField()
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='comments'
-    )
+class Comment(BaseReviewComments):
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name='comments'
+        Review, on_delete=models.CASCADE
     )
-    pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True
-    )
+
+    class Meta():
+        ordering = ('review',)
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+        default_related_name = 'comments'
+
+    def __str__(self):
+        return self.text[:60]
