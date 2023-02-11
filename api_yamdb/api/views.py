@@ -180,6 +180,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
     permission_classes = (AdminPermission | ReadOnlyPermission,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
+    search_fields = ('name',)
 
     def get_serializer_class(self):
         if self.action == 'create' or self.action == 'partial_update':

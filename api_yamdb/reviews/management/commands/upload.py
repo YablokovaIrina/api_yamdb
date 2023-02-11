@@ -3,8 +3,7 @@ from django.core.management.base import BaseCommand
 
 
 from reviews.models import (Category, Comment, Genre,
-                            Title, Review)
-from users.models import User
+                            Title, Review, User)
 
 
 def load_users():

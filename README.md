@@ -49,6 +49,12 @@ python3 manage.py migrate
 python3 manage.py runserver
 ```
 
+Загрузить в БД информацию из CVS-файлов:
+
+```
+python3 manage.py upload
+```
+
 ### Примеры запросов к API:
 
 #### Ресурс auth:
