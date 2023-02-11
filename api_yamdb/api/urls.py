@@ -2,23 +2,37 @@ from django.urls import include, path
 from rest_framework import routers
 
 from .views import (
-    CommentsViewSet,
-    ReviewViewSet,
     CategoriesViewSet,
+    CommentsViewSet,
     GenresViewSet,
+    ReviewViewSet,
+    signup_post,
     TitlesViewSet,
+    token_post,
     UserViewSet,
-    UserCreateViewSet,
-    UserReceiveTokenViewSet,
 )
 
 app_name = 'api'
 
 router_v1 = routers.DefaultRouter()
-router_v1.register(r'users', UserViewSet, basename='users')
-router_v1.register(r'categories', CategoriesViewSet, basename='categories')
-router_v1.register(r'genres', GenresViewSet, basename='genres')
-router_v1.register(r'titles', TitlesViewSet, basename='titles')
+
+router_v1.register('users', UserViewSet)
+
+router_v1.register(
+    'titles',
+    TitlesViewSet,
+    basename='titles',
+)
+router_v1.register(
+    'categories',
+    CategoriesViewSet,
+    basename='categories',
+)
+router_v1.register(
+    'genres',
+    GenresViewSet,
+    basename='genres',
+)
 router_v1.register(
     r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,
@@ -27,12 +41,15 @@ router_v1.register(
 router_v1.register(
     r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
     CommentsViewSet,
-    basename='comment'
+    basename='comments'
 )
 
+auth_patterns = [
+    path('signup/', signup_post),
+    path('token/', token_post)
+]
 
 urlpatterns = [
-    path('v1/auth/signup/', UserCreateViewSet.as_view({'post': 'create'})),
-    path('v1/auth/token/', UserReceiveTokenViewSet.as_view({'post': 'create'})),
     path('v1/', include(router_v1.urls)),
+    path('v1/auth/', include(auth_patterns)),
 ]
