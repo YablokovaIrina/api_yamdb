@@ -1,33 +1,33 @@
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import Review, Title, Genre, Category, User
+
 from .filters import TitlesFilter
 from .permissions import (
-    IsAuthorOrStaffOrReadOnly,
     AdminPermission,
+    IsAuthorOrStaffOrReadOnly,
     ReadOnlyPermission
 )
 from .serializers import (
-    CommentSerializer,
-    ReviewSerializer,
     CategorySerializer,
+    CommentSerializer,
     GenreSerializer,
-    TitleWriteSerializer,
-    TitleReadSerializer,
-    UserSerializer,
-    UserRecieveTokenSerializer,
     RegisterDataSerializer,
+    ReviewSerializer,
+    TitleReadSerializer,
+    TitleWriteSerializer,
+    UserRecieveTokenSerializer,
+    UserSerializer,
 )
 from .utils import send_confirmation_code
-from django.db import IntegrityError
+from reviews.models import Category, Genre, Review, Title, User
 
 
 @api_view(['POST'])
@@ -38,6 +38,7 @@ def signup_post(request):
     user = serializer.save()
     send_confirmation_code(user)
     return Response(request.data, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 @permission_classes((AllowAny,))
@@ -65,6 +66,7 @@ class UserViewSet(viewsets.ModelViewSet):
     filterset_fields = ('username',)
     search_fields = ('username', )
     lookup_field = 'username'
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     @action(
         methods=['get', 'patch', 'delete'],
@@ -80,8 +82,21 @@ class UserViewSet(viewsets.ModelViewSet):
         elif request.method == 'DELETE':
             serializer = UserSerializer(user, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
+            serializer.save(role=request.user.role)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get_user_by_username(self, request, username):
+        user = get_object_or_404(User, username=username)
+        if request.method == 'PATCH':
+            serializer = UserSerializer(user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == 'DELETE':
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
         detail=False,

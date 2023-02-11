@@ -13,7 +13,7 @@ EMAIL_EXISTS_MSG = 'Указанная почта уже зарегестрир�
 class RegisterDataSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=150,
-        validators=[validate_username]
+        validators=[validate_username],
     )
     email = serializers.EmailField(
         max_length=254,
@@ -46,6 +46,7 @@ class RegisterDataSerializer(serializers.Serializer):
     def create(self, validated_data):
         user, created = User.objects.get_or_create(**validated_data)
         return user
+
 
 class UserRecieveTokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
