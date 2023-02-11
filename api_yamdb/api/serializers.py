@@ -18,7 +18,7 @@ class RegisterDataSerializer(serializers.Serializer):
     email = serializers.EmailField(
         max_length=254,
     )
-    
+
     class Meta:
         model = User
         fields = ['username', 'email']
@@ -27,7 +27,7 @@ class RegisterDataSerializer(serializers.Serializer):
         if name == FORBIDDEN_NAME:
             raise serializers.ValidationError(FORBIDDEN_NAME)
         return name
-    
+
     def validate(self, data):
         username = data.get('username')
         email = data.get('email')
@@ -67,7 +67,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data.get('username') == FORBIDDEN_NAME:
             raise serializers.ValidationError(
-               {'username': FORBIDDEN_NAME_MSG})
+                {'username': FORBIDDEN_NAME_MSG})
         return data
 
 
