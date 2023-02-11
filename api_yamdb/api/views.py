@@ -24,31 +24,20 @@ from .serializers import (
     TitleReadSerializer,
     UserSerializer,
     UserRecieveTokenSerializer,
+    RegisterDataSerializer,
 )
 from .utils import send_confirmation_code
+from django.db import IntegrityError
 
 
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def signup_post(request):
-    username = request.data.get('username')
-
-    if not User.objects.filter(username=username).exists():
-        serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        send_confirmation_code(username)
-        return Response(request.data, status=status.HTTP_200_OK)
-
-    user = get_object_or_404(User, username=username)
-    serializer = UserSerializer(
-        user, data=request.data, partial=True
-    )
+    serializer = RegisterDataSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
-    send_confirmation_code(username)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
+    user = serializer.save()
+    send_confirmation_code(user)
+    return Response(request.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes((AllowAny,))

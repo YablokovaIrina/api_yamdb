@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.serializers import SlugRelatedField
 
 from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.validators import validate_username
 
 FORBIDDEN_NAME = 'me'
 FORBIDDEN_NAME_MSG = 'Имя пользователя "me" не разрешено.'
@@ -10,15 +11,23 @@ EMAIL_EXISTS_MSG = 'Указанная почта уже зарегестрир�
 
 
 class RegisterDataSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        max_length=150,
+        validators=[validate_username]
+    )
+    email = serializers.EmailField(
+        max_length=254,
+    )
+    
     class Meta:
         model = User
-        fields = ('email', 'username')
+        fields = ['username', 'email']
 
     def validate_username(self, name):
         if name == FORBIDDEN_NAME:
             raise serializers.ValidationError(FORBIDDEN_NAME)
         return name
-
+    
     def validate(self, data):
         username = data.get('username')
         email = data.get('email')
@@ -34,6 +43,9 @@ class RegisterDataSerializer(serializers.Serializer):
             raise serializers.ValidationError(EMAIL_EXISTS_MSG)
         return data
 
+    def create(self, validated_data):
+        user, created = User.objects.get_or_create(**validated_data)
+        return user
 
 class UserRecieveTokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
