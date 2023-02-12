@@ -67,7 +67,7 @@ class User(AbstractUser):
         return self.role == ADMIN or self.is_staff
 
 
-class Category(models.Model):
+class BaseCategoryGenre(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     slug = models.SlugField(
         max_length=50,
@@ -75,28 +75,30 @@ class Category(models.Model):
         verbose_name='Идентификатор')
 
     class Meta:
+        abstract = True
         ordering = ('name',)
+    
+    def __str__(self):
+        return self.name
+
+
+
+class Category(BaseCategoryGenre):
+
+    pass
+
+    class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
-    def __str__(self):
-        return self.slug
 
+class Genre(BaseCategoryGenre):\
 
-class Genre(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(
-        max_length=50,
-        unique=True,
-        verbose_name='Идентификатор')
+    pass
 
     class Meta:
-        ordering = ('name',)
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-
-    def __str__(self):
-        return self.slug
 
 
 class Title(models.Model):

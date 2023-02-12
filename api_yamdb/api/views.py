@@ -1,3 +1,4 @@
+import operator
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -177,6 +178,7 @@ class GenresViewSet(CategoriesGenresBaseViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    ordering_fields = ('name',)
     permission_classes = (AdminPermission | ReadOnlyPermission,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
