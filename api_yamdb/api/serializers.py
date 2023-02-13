@@ -20,7 +20,7 @@ class RegisterDataSerializer(serializers.Serializer):
     email = serializers.EmailField(
         max_length=254,
     )
-    
+
     class Meta:
         model = User
         fields = ['username', 'email']
@@ -58,6 +58,7 @@ class UserSerializer(serializers.ModelSerializer):
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
 
+
     def validate_username(self, value):
         return validate_username(value)
 
@@ -83,13 +84,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
 
     def validate(self, data):
+        if self.context['request'].method == 'PATCH':
+            return data
         author = self.context['request'].user
         title_id = self.context['view'].kwargs.get('title_id')
-        if self.context['request'].method != 'PATCH':
-            author = self.context['request'].user
-            title_id = self.context['view'].kwargs.get('title_id')
-            if Review.objects.filter(author=author, title=title_id).exists():
-                raise serializers.ValidationError('Вы уже оставили отзыв')
+        if Review.objects.filter(author=author, title=title_id).exists():
+            raise serializers.ValidationError('Вы уже оставили отзыв')
         return data
 
 
