@@ -18,7 +18,7 @@ class RegisterDataSerializer(serializers.Serializer):
     email = serializers.EmailField(
         max_length=254,
     )
-    
+
     class Meta:
         model = User
         fields = ['username', 'email']
@@ -27,7 +27,7 @@ class RegisterDataSerializer(serializers.Serializer):
         if name == FORBIDDEN_NAME:
             raise serializers.ValidationError(FORBIDDEN_NAME)
         return name
-    
+
     def validate(self, data):
         username = data.get('username')
         email = data.get('email')
@@ -66,8 +66,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data.get('username') == FORBIDDEN_NAME:
-            raise serializers.ValidationError(
-               {'username': FORBIDDEN_NAME_MSG})
+            raise serializers.ValidationError({'username': FORBIDDEN_NAME_MSG})
         return data
 
 
@@ -92,13 +91,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
 
     def validate(self, data):
+        if self.context['request'].method == 'PATCH':
+            return data
         author = self.context['request'].user
         title_id = self.context['view'].kwargs.get('title_id')
-        if self.context['request'].method != 'PATCH':
-            author = self.context['request'].user
-            title_id = self.context['view'].kwargs.get('title_id')
-            if Review.objects.filter(author=author, title=title_id).exists():
-                raise serializers.ValidationError('Вы уже оставили отзыв')
+        if Review.objects.filter(author=author, title=title_id).exists():
+            raise serializers.ValidationError('Вы уже оставили отзыв')
         return data
 
 

@@ -77,10 +77,9 @@ class BaseCategoryGenre(models.Model):
     class Meta:
         abstract = True
         ordering = ('name',)
-    
+
     def __str__(self):
         return self.name
-
 
 
 class Category(BaseCategoryGenre):
@@ -149,7 +148,9 @@ class GenreTitle(models.Model):
 class BaseReviewComments(models.Model):
     text = models.TextField()
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE
+        User,
+        verbose_name='Автор',
+        on_delete=models.CASCADE,
     )
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
@@ -157,14 +158,13 @@ class BaseReviewComments(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ('author',)
+
+    def __str__(self):
+        return self.text[:60]
 
 
 class Review(BaseReviewComments):
-    author = models.ForeignKey(
-        User,
-        verbose_name='Автор',
-        on_delete=models.CASCADE,
-    )
     # оценка должна лежать в диапозоне от 1 до 10
     score = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)]
@@ -173,20 +173,16 @@ class Review(BaseReviewComments):
         Title, on_delete=models.CASCADE
     )
 
-    class Meta():
+    class Meta(BaseReviewComments.Meta):
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
                 name='unique review'
             )
         ]
-        ordering = ('title',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
-
-    def __str__(self):
-        return self.text[:60]
 
 
 class Comment(BaseReviewComments):
@@ -194,11 +190,7 @@ class Comment(BaseReviewComments):
         Review, on_delete=models.CASCADE
     )
 
-    class Meta():
-        ordering = ('review',)
+    class Meta(BaseReviewComments.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'
-
-    def __str__(self):
-        return self.text[:60]

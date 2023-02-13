@@ -1,4 +1,3 @@
-import operator
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -124,9 +123,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrStaffOrReadOnly,)
 
     def get_title(self):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-        return title
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
@@ -140,13 +137,10 @@ class CommentsViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrStaffOrReadOnly,)
 
     def get_review(self):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, pk=review_id)
-        return review
+        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
 
     def perform_create(self, serializer):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
+        review = self.get_review()
         serializer.save(author=self.request.user, review=review)
 
     def get_queryset(self):
