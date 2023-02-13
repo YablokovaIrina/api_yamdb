@@ -68,32 +68,6 @@ class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     @action(
-        methods=['get', 'patch', 'delete'],
-        detail=False,
-        url_path='me',
-        permission_classes=(permissions.IsAuthenticated, )
-    )
-    def get_patch_me(self, request):
-        user = get_object_or_404(User, username=self.request.user)
-        if request.method == 'PATCH':
-            return Response(UserSerializer.data, status=status.HTTP_200_OK)
-        elif request.method == 'DELETE':
-            serializer = UserSerializer(user, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(role=request.user.role)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == 'PATCH':
-            serializer = UserSerializer(user, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        elif request.method == 'DELETE':
-            user.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(
         detail=False,
         methods=['get', 'patch'],
         url_path='me',

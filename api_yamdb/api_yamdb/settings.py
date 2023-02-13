@@ -123,7 +123,8 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-LENGTH_TEXT = 15
+EMAIL_LENGHT = 254
+ROLE_LENGHT = 15
 LIST_PER_PAGE = 10
 MAX_LENGHT = 150
 EMAIL_YAMDB = 'registration_YaMDb@mail.com'

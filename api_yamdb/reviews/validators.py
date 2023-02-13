@@ -19,10 +19,9 @@ def validate_username(value):
             FORBIDDEN_NAME_MESSAGE,
             params={'value': value},
         )
-    match = re.match(r'^[\w@.+-]+$', value)
-    if match is None or match.group() != value:
+    match = re.match(r"^[\w@.+-]+$", value)
+    if match is None:
         raise ValidationError(
-            'Имя пользователя может содержать только буквы, '
-            'цифры и символы @ . + - _'
+            f"Недопустимые символы в username: {match} "
         )
     return value

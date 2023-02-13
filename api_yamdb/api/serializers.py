@@ -25,11 +25,6 @@ class RegisterDataSerializer(serializers.Serializer):
         model = User
         fields = ['username', 'email']
 
-    def validate_username(self, name):
-        if name == FORBIDDEN_NAME:
-            raise serializers.ValidationError(FORBIDDEN_NAME)
-        return name
-    
     def validate(self, data):
         username = data.get('username')
         email = data.get('email')
@@ -53,12 +48,6 @@ class RegisterDataSerializer(serializers.Serializer):
 class UserRecieveTokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=MAX_LENGHT)
     confirmation_code = serializers.CharField(max_length=50)
-
-    def validate(self, data):
-        if data.get('username') == FORBIDDEN_NAME:
-            raise serializers.ValidationError(
-               {'username': FORBIDDEN_NAME_MESSAGE})
-        return data
 
 
 class UserSerializer(serializers.ModelSerializer):
