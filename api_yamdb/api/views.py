@@ -49,7 +49,10 @@ def token_post(request):
     confirmation_code = serializer.validated_data['confirmation_code']
     user = get_object_or_404(User, username=username)
     if user.confirmation_code == confirmation_code:
-        return Response({'token': str(RefreshToken.access_token)}, status=status.HTTP_200_OK)
+        return Response(
+            {'token': str(RefreshToken.access_token)},
+            status=status.HTTP_200_OK
+        )
     return Response(
         'Неверный код подтверждения', status=status.HTTP_400_BAD_REQUEST
     )

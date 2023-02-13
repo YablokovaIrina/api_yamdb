@@ -5,8 +5,6 @@ from reviews.models import Category, Comment, Genre, Review, Title, User
 from reviews.validators import validate_username
 from api_yamdb.settings import (
     EMAIL_EXISTS_MESSAGE,
-    FORBIDDEN_NAME,
-    FORBIDDEN_NAME_MESSAGE,
     MAX_LENGHT,
     USER_EXISTS_MESSAGE,
 )
@@ -57,7 +55,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
-
 
     def validate_username(self, value):
         return validate_username(value)
