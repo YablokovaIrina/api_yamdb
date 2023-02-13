@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from api_yamdb.settings import MAX_LENGHT
 from .validators import validate_username, validate_year
 
 ADMIN = 'admin'
@@ -18,7 +19,7 @@ class User(AbstractUser):
 
     username = models.CharField(
         unique=True,
-        max_length=150,
+        max_length=MAX_LENGHT,
         verbose_name='Имя пользователя',
         validators=(validate_username,),
     )
@@ -80,7 +81,6 @@ class BaseCategoryGenre(models.Model):
     
     def __str__(self):
         return self.name
-
 
 
 class Category(BaseCategoryGenre):

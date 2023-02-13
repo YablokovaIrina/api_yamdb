@@ -125,4 +125,9 @@ SIMPLE_JWT = {
 
 LENGTH_TEXT = 15
 LIST_PER_PAGE = 10
+MAX_LENGHT = 150
 EMAIL_YAMDB = 'registration_YaMDb@mail.com'
+FORBIDDEN_NAME = 'me'
+FORBIDDEN_NAME_MESSAGE = 'Имя пользователя "me" не разрешено.'
+USER_EXISTS_MESSAGE = 'Пользователь с таким username уже зарегистрирован'
+EMAIL_EXISTS_MESSAGE = 'Указанная почта уже зарегестрирована другим пользователем'
