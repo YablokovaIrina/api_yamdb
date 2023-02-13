@@ -49,9 +49,7 @@ def token_post(request):
     confirmation_code = serializer.validated_data['confirmation_code']
     user = get_object_or_404(User, username=username)
     if user.confirmation_code == confirmation_code:
-        refresh = RefreshToken.for_user(user)
-        token_data = {'token': str(refresh.access_token)}
-        return Response(token_data, status=status.HTTP_200_OK)
+        return Response({'token': str(RefreshToken.access_token)}, status=status.HTTP_200_OK)
     return Response(
         'Неверный код подтверждения', status=status.HTTP_400_BAD_REQUEST
     )
@@ -67,36 +65,6 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ('username', )
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
-
-    @action(
-        methods=['get', 'patch', 'delete'],
-        detail=False,
-        url_path='me',
-        permission_classes=(permissions.IsAuthenticated, )
-    )
-    def get_patch_me(self, request):
-        user = get_object_or_404(User, username=self.request.user)
-        if request.method == 'PATCH':
-            serializer = UserSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        elif request.method == 'DELETE':
-            serializer = UserSerializer(user, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(role=request.user.role)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def get_user_by_username(self, request, username):
-        user = get_object_or_404(User, username=username)
-        if request.method == 'PATCH':
-            serializer = UserSerializer(user, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        elif request.method == 'DELETE':
-            user.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
         detail=False,

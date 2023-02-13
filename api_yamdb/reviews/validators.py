@@ -3,6 +3,8 @@ import datetime as dt
 
 from django.core.exceptions import ValidationError
 
+from api_yamdb.settings import FORBIDDEN_NAME, FORBIDDEN_NAME_MESSAGE
+
 
 def validate_year(value):
     if value > dt.datetime.now().year:
@@ -12,15 +14,14 @@ def validate_year(value):
 
 
 def validate_username(value):
-    if value == 'me':
+    if value == FORBIDDEN_NAME:
         raise ValidationError(
-            'Имя не может быть - me/Me/I.',
+            FORBIDDEN_NAME_MESSAGE,
             params={'value': value},
         )
-    match = re.match(r'^[\w@.+-]+$', value)
-    if match is None or match.group() != value:
+    match = re.match(r"^[\w@.+-]+$", value)
+    if match is None:
         raise ValidationError(
-            'Имя пользователя может содержать только буквы, '
-            'цифры и символы @ . + - _'
+            f"Недопустимые символы в username: {match} "
         )
     return value
