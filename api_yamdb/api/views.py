@@ -110,7 +110,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-    
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
 
