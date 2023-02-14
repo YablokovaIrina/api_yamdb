@@ -25,7 +25,6 @@ class AdminPermission(permissions.BasePermission):
                 and request.user.is_admin)
 
 
-
 class ReadOnlyPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
