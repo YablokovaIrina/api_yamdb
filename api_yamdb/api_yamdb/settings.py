@@ -123,6 +123,13 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-LENGTH_TEXT = 15
+EMAIL_LENGHT = 254
+ROLE_LENGHT = 15
 LIST_PER_PAGE = 10
+MAX_LENGHT = 150
+MAX_LENGHT_CODE = 50
 EMAIL_YAMDB = 'registration_YaMDb@mail.com'
+FORBIDDEN_NAME = 'me'
+FORBIDDEN_NAME_MESSAGE = 'Имя пользователя "me" не разрешено.'
+USER_EXISTS_MESSAGE = 'Пользователь с таким username уже зарегистрирован'
+EMAIL_EXISTS_MESSAGE = 'Указанная почта уже зарегестрирована другим пользователем'

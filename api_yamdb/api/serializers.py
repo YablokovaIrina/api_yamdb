@@ -1,59 +1,28 @@
 from rest_framework import serializers
 from rest_framework.serializers import SlugRelatedField
 
+from api_yamdb.settings import (
+    EMAIL_LENGHT,
+    MAX_LENGHT,
+    MAX_LENGHT_CODE
+)
 from reviews.models import Category, Comment, Genre, Review, Title, User
 from reviews.validators import validate_username
-
-FORBIDDEN_NAME = 'me'
-FORBIDDEN_NAME_MSG = 'Имя пользователя "me" не разрешено.'
-USER_EXISTS_MSG = 'Пользователь с таким username уже зарегистрирован'
-EMAIL_EXISTS_MSG = 'Указанная почта уже зарегестрирована другим пользователем'
 
 
 class RegisterDataSerializer(serializers.Serializer):
     username = serializers.CharField(
-        max_length=150,
+        max_length=MAX_LENGHT,
         validators=[validate_username],
     )
     email = serializers.EmailField(
-        max_length=254,
+        max_length=EMAIL_LENGHT,
     )
-    
-    class Meta:
-        model = User
-        fields = ['username', 'email']
-
-    def validate_username(self, name):
-        if name == FORBIDDEN_NAME:
-            raise serializers.ValidationError(FORBIDDEN_NAME)
-        return name
-    
-    def validate(self, data):
-        username = data.get('username')
-        email = data.get('email')
-        if (
-                User.objects.filter(username=username).exists()
-                and User.objects.get(username=username).email != email
-        ):
-            raise serializers.ValidationError(USER_EXISTS_MSG)
-        if (
-                User.objects.filter(email=email).exists()
-                and User.objects.get(email=email).username != username
-        ):
-            raise serializers.ValidationError(EMAIL_EXISTS_MSG)
-        return data
-
-    def create(self, validated_data):
-        user, created = User.objects.get_or_create(**validated_data)
-        return user
 
 
 class UserRecieveTokenSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
-    confirmation_code = serializers.CharField(max_length=50)
-
-    class Meta:
-        fields = ('username', 'confirmation_code')
+    username = serializers.CharField(max_length=MAX_LENGHT)
+    confirmation_code = serializers.CharField(max_length=MAX_LENGHT_CODE)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -64,11 +33,8 @@ class UserSerializer(serializers.ModelSerializer):
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
 
-    def validate(self, data):
-        if data.get('username') == FORBIDDEN_NAME:
-            raise serializers.ValidationError(
-               {'username': FORBIDDEN_NAME_MSG})
-        return data
+    def validate_username(self, value):
+        return validate_username(value)
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -92,13 +58,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
 
     def validate(self, data):
+        if self.context['request'].method == 'PATCH':
+            return data
         author = self.context['request'].user
         title_id = self.context['view'].kwargs.get('title_id')
-        if self.context['request'].method != 'PATCH':
-            author = self.context['request'].user
-            title_id = self.context['view'].kwargs.get('title_id')
-            if Review.objects.filter(author=author, title=title_id).exists():
-                raise serializers.ValidationError('Вы уже оставили отзыв')
+        if Review.objects.filter(author=author, title=title_id).exists():
+            raise serializers.ValidationError('Вы уже оставили отзыв')
         return data
 
 
@@ -117,12 +82,9 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    genre = GenreSerializer(
-        read_only=True,
-        many=True
-    )
-    rating = serializers.IntegerField(read_only=True, required=False)
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
+    rating = serializers.IntegerField(required=False)
 
     class Meta:
         fields = '__all__'
@@ -150,5 +112,4 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'name', 'year', 'description', 'genre', 'category')
-        read_only_fields = ('id',)
         model = Title
