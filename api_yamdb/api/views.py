@@ -1,3 +1,5 @@
+from django.contrib.auth.tokens import default_token_generator
+from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -26,7 +28,6 @@ from .serializers import (
     UserRecieveTokenSerializer,
     UserSerializer,
 )
-from .utils import send_confirmation_code
 from reviews.models import Category, Genre, Review, Title, User
 
 
@@ -35,8 +36,23 @@ from reviews.models import Category, Genre, Review, Title, User
 def signup_post(request):
     serializer = RegisterDataSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user = serializer.save()
-    send_confirmation_code(user)
+    try:
+        user, _ = User.objects.get_or_create(
+            username=serializer.validated_data['username'],
+            email=serializer.validated_data['email'],
+        )
+    except IntegrityError:
+        return Response(
+            'Логин или email уже используется',
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    user.email_user(
+        'Confirmation code',
+        'Ваш логин {user}, код подтверждения {token}'.format(
+            user=user.username,
+            token=default_token_generator.make_token(user),
+        ),
+    ),
     return Response(request.data, status=status.HTTP_200_OK)
 
 
@@ -49,10 +65,9 @@ def token_post(request):
     confirmation_code = serializer.validated_data['confirmation_code']
     user = get_object_or_404(User, username=username)
     if user.confirmation_code == confirmation_code:
-        return Response(
-            {'token': str(RefreshToken.access_token)},
-            status=status.HTTP_200_OK
-        )
+        refresh = RefreshToken.for_user(user)
+        token_data = {'token': str(refresh.access_token)}
+        return Response(token_data, status=status.HTTP_200_OK)
     return Response(
         'Неверный код подтверждения', status=status.HTTP_400_BAD_REQUEST
     )
@@ -68,6 +83,36 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ('username', )
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
+
+    @action(
+        methods=['get', 'patch', 'delete'],
+        detail=False,
+        url_path='me',
+        permission_classes=(permissions.IsAuthenticated, )
+    )
+    def get_patch_me(self, request):
+        user = get_object_or_404(User, username=self.request.user)
+        if request.method == 'PATCH':
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == 'DELETE':
+            serializer = UserSerializer(user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(role=request.user.role)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get_user_by_username(self, request, username):
+        user = get_object_or_404(User, username=username)
+        if request.method == 'PATCH':
+            serializer = UserSerializer(user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == 'DELETE':
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
         detail=False,
@@ -94,7 +139,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrStaffOrReadOnly,)
 
     def get_title(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, pk=title_id)
+        return title
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
@@ -108,10 +155,13 @@ class CommentsViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrStaffOrReadOnly,)
 
     def get_review(self):
-        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, pk=review_id)
+        return review
 
     def perform_create(self, serializer):
-        review = self.get_review()
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user, review=review)
 
     def get_queryset(self):
@@ -143,7 +193,6 @@ class GenresViewSet(CategoriesGenresBaseViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
-    ordering_fields = ('name',)
     permission_classes = (AdminPermission | ReadOnlyPermission,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
