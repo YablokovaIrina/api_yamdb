@@ -153,7 +153,8 @@ class BaseReviewComments(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ('author',)
+        ordering = ('pub_date',)
+        default_related_name = '%(class)ss'
 
     def __str__(self):
         return self.text[:60]
@@ -177,7 +178,6 @@ class Review(BaseReviewComments):
         ]
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
-        default_related_name = 'reviews'
 
 
 class Comment(BaseReviewComments):
@@ -188,4 +188,3 @@ class Comment(BaseReviewComments):
     class Meta(BaseReviewComments.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-        default_related_name = 'comments'

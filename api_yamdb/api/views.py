@@ -100,7 +100,9 @@ class UserViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save(role=request.user.role)
-        return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
+        return Response(
+            UserSerializer(request.user).data, status=status.HTTP_200_OK
+        )
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -109,7 +111,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-    
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
 
@@ -125,8 +127,7 @@ class CommentsViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
 
     def perform_create(self, serializer):
-        review = self.get_review()
-        serializer.save(author=self.request.user, review=review)
+        serializer.save(author=self.request.user, review=self.get_review())
 
     def get_queryset(self):
         return self.get_review().comments.all()

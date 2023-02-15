@@ -60,9 +60,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if self.context['request'].method == 'PATCH':
             return data
-        author = self.context['request'].user
         title_id = self.context['view'].kwargs.get('title_id')
-        if Review.objects.filter(author=author, title=title_id).exists():
+        author = self.context['request'].user
+
+        if (
+            Title.objects.filter(id=title_id).exists()
+            and Review.objects.filter(author=author, title=title_id).exists()
+        ):
             raise serializers.ValidationError('Вы уже оставили отзыв')
         return data
 
