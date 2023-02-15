@@ -25,6 +25,7 @@ def validate_username(value):
             set("".join(str(symbols) for symbols in forbidden_symbols))
         )
         raise ValidationError(
-            f'Имя пользователя содержит недопустимые символы {cleared_forbidden}'
+            f'Имя пользователя содержит недопустимые символы:'
+            f'{cleared_forbidden}'
         )
     return value
