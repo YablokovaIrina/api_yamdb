@@ -3,25 +3,28 @@ import datetime as dt
 
 from django.core.exceptions import ValidationError
 
-from api_yamdb.settings import FORBIDDEN_NAME, FORBIDDEN_NAME_MESSAGE
+from api_yamdb.settings import FORBIDDEN_NAME
 
 
 def validate_year(value):
+    year_now = dt.datetime.now().year
     if value > dt.datetime.now().year:
         raise ValidationError(
-            f'{value} превышает {dt.datetime.now().year}!')
+            f'Год выпуска {value} не может превышать текущий {year_now}!')
     return value
 
 
 def validate_username(value):
     if value == FORBIDDEN_NAME:
         raise ValidationError(
-            FORBIDDEN_NAME_MESSAGE,
-            params={'value': value},
+            'Имя пользователя {FORBIDDEN_NAME} не разрешено.'
         )
-    match = re.match(r"^[\w@.+-]+$", value)
-    if match is None:
+    forbidden_symbols = re.findall(r"[^-\w]+", value)
+    if forbidden_symbols:
+        cleared_forbidden = "".join(
+            set("".join(str(symbols) for symbols in forbidden_symbols))
+        )
         raise ValidationError(
-            f"Недопустимые символы в username: {match} "
+            f'Имя пользователя содержит недопустимые символы {cleared_forbidden}'
         )
     return value
