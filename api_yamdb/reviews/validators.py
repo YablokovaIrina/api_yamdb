@@ -7,21 +7,21 @@ from api_yamdb.settings import FORBIDDEN_NAME, FORBIDDEN_NAME_MESSAGE
 
 
 def validate_year(value):
+    year_now = dt.datetime.now().year
     if value > dt.datetime.now().year:
         raise ValidationError(
-            f'{value} превышает {dt.datetime.now().year}!')
+            f'Год выпуска {value} не может превышать текущий {year_now}!')
     return value
 
 
 def validate_username(value):
     if value == FORBIDDEN_NAME:
         raise ValidationError(
-            FORBIDDEN_NAME_MESSAGE,
-            params={'value': value},
+            FORBIDDEN_NAME_MESSAGE
         )
-    match = re.match(r"^[\w@.+-]+$", value)
-    if match is None:
+    symbols = ''.join(re.findall(r'[^\w.@+-]+', value))
+    if symbols not in value:
         raise ValidationError(
-            f"Недопустимые символы в username: {match} "
+            f'Имя пользователя содержит недопустимые символы {symbols}'
         )
     return value

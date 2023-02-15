@@ -83,14 +83,14 @@ class BaseCategoryGenre(models.Model):
 
 class Category(BaseCategoryGenre):
 
-    class Meta:
+    class Meta(BaseCategoryGenre.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
 class Genre(BaseCategoryGenre):
 
-    class Meta:
+    class Meta(BaseCategoryGenre.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
