@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from api_yamdb.settings import EMAIL_LENGHT, MAX_LENGHT, ROLE_LENGHT
+from api_yamdb.settings import EMAIL_LENGHT, MAX_LENGHT
 from .validators import validate_username, validate_year
 
 ADMIN = 'admin'
@@ -29,7 +29,7 @@ class User(AbstractUser):
         verbose_name='Адрес электронной почты',
     )
     role = models.CharField(
-        max_length=ROLE_LENGHT,
+        max_length=max(len(role) for role, _ in USER_ROLE_CHOICES),
         choices=USER_ROLE_CHOICES,
         default=USER,
         verbose_name='Роль пользователя',

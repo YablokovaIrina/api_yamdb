@@ -21,7 +21,10 @@ class RegisterDataSerializer(serializers.Serializer):
 
 
 class UserRecieveTokenSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=MAX_LENGHT)
+    username = serializers.CharField(
+        max_length=MAX_LENGHT,
+        validators=[validate_username],
+    )
     confirmation_code = serializers.CharField(max_length=MAX_LENGHT_CODE)
 
 
