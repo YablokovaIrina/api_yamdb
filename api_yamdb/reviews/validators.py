@@ -19,12 +19,10 @@ def validate_username(value):
         raise ValidationError(
             'Имя пользователя {FORBIDDEN_NAME} не разрешено.'
         )
-    forbidden_symbols = re.findall(r"[^-\w]+", value)
+    forbidden_symbols = re.findall(r"^[\w.@+-]+\z", value)
     if forbidden_symbols:
-        cleared_forbidden = "".join(
-            set("".join(str(symbols) for symbols in forbidden_symbols))
-        )
         raise ValidationError(
-            f'Имя пользователя содержит недопустимые символы {cleared_forbidden}'
+            f'Имя пользователя содержит недопустимые символы '
+            f'{"".join(set(forbidden_symbols))}'
         )
     return value
