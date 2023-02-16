@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.serializers import SlugRelatedField
 
@@ -63,13 +64,12 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if self.context['request'].method == 'PATCH':
             return data
-        title_id = self.context['view'].kwargs.get('title_id')
+        title = get_object_or_404(
+            Title, pk=self.context['view'].kwargs.get('title_id')
+        )
         author = self.context['request'].user
 
-        if (
-            Title.objects.filter(id=title_id).exists()
-            and Review.objects.filter(author=author, title=title_id).exists()
-        ):
+        if Review.objects.filter(author=author, title=title).exists():
             raise serializers.ValidationError('Вы уже оставили отзыв')
         return data
 

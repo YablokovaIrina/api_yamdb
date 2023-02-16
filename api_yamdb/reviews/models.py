@@ -153,7 +153,7 @@ class BaseReviewComments(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ('pub_date',)
+        ordering = ('-pub_date',)
         default_related_name = '%(class)ss'
 
     def __str__(self):
